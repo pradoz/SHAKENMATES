@@ -46,6 +46,7 @@ data "aws_ami" "ubuntu_ami" {
   owners = ["099720109477"] # Canonical
 }
 
+# Self-hosted GitLab instance
 resource "aws_instance" "gitlab_instance" {
   ami           = data.aws_ami.ubuntu_ami.id
   instance_type = "t3.medium"
@@ -55,3 +56,17 @@ resource "aws_instance" "gitlab_instance" {
     Name = "Gitlab Instance"
   }
 }
+
+# WikiJS instance
+resource "aws_instance" "wikijs_instance" {
+  ami           = data.aws_ami.ubuntu_ami.id
+  instance_type = "t3.small"
+  key_name = "horizons-ec2"
+
+  user_data = file("install_docker.sh")
+
+  tags = {
+    Name = "WikiJS Instance"
+  }
+}
+
