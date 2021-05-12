@@ -43,6 +43,14 @@ resource "aws_route53_record" "wiki" {
   records = [aws_instance.wikijs_instance.public_ip]
 }
 
+resource "aws_route53_record" "rocket" {
+  zone_id = "Z0604056W5WW02JGQ0TK"
+  name    = "rpcket.zprado.com"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.rocketchat_instance.public_ip]
+}
+
 data "aws_ami" "ubuntu_ami" {
   most_recent = true
 
@@ -70,12 +78,13 @@ resource "aws_instance" "gitlab_instance" {
   }
 }
 
-resource "aws_instance" "wikijs_instance" { # Instance
+# WikiJS Instance
+resource "aws_instance" "wikijs_instance" {
   ami           = data.aws_ami.ubuntu_ami.id
   instance_type = "t3.small"
   key_name = "horizons-ec2"
 
-  user_data = file("install_docker.sh")
+  user_data = file("install_wikijs.sh")
   security_groups = [aws_security_group.wikijs.name]
 
   tags = {
@@ -83,8 +92,22 @@ resource "aws_instance" "wikijs_instance" { # Instance
   }
 }
 
-# WikiJS
-resource "aws_security_group" "wikijs" { # Security Group
+# RocketChat Instance
+resource "aws_instance" "rocketchat_instance" {
+  ami           = data.aws_ami.ubuntu_ami.id
+  instance_type = "t3.small"
+  key_name = "horizons-ec2"
+
+  user_data = file("install_rocketchat.sh")
+  security_groups = [aws_security_group.wikijs.name]
+
+  tags = {
+    Name = "RocketChat Instance"
+  }
+}
+
+# WikiJS Security Group
+resource "aws_security_group" "wikijs" {
   name        = "allow_tls"
   description = "Allow TLS inbound traffic"
   vpc_id      = local.vpc_id
