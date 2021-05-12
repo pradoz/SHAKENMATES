@@ -16,18 +16,31 @@ provider "aws" {
 # Setup hosted zone for gitlab
 # resource "aws_route53_zone" "gitlab_zone" {
 #   name = "gitlab.zprado.com"
-# 
+#
 #   tags = {
 #     Environment = "prod"
 #   }
 # }
 
-resource "aws_route53_record" "www" {
+locals {
+  vpc_id = "vpc-750cfb13"
+}
+
+# Route 53 records
+resource "aws_route53_record" "gitlab" {
   zone_id = "Z0604056W5WW02JGQ0TK"
   name    = "gitlab.zprado.com"
   type    = "A"
   ttl     = "300"
   records = [aws_instance.gitlab_instance.public_ip]
+}
+
+resource "aws_route53_record" "wiki" {
+  zone_id = "Z0604056W5WW02JGQ0TK"
+  name    = "wiki.zprado.com"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.wikijs_instance.public_ip]
 }
 
 data "aws_ami" "ubuntu_ami" {
@@ -57,16 +70,62 @@ resource "aws_instance" "gitlab_instance" {
   }
 }
 
-# WikiJS instance
-resource "aws_instance" "wikijs_instance" {
+resource "aws_instance" "wikijs_instance" { # Instance
   ami           = data.aws_ami.ubuntu_ami.id
   instance_type = "t3.small"
   key_name = "horizons-ec2"
 
   user_data = file("install_docker.sh")
+  security_groups = [aws_security_group.wikijs.name]
 
   tags = {
     Name = "WikiJS Instance"
+  }
+}
+
+# WikiJS
+resource "aws_security_group" "wikijs" { # Security Group
+  name        = "allow_tls"
+  description = "Allow TLS inbound traffic"
+  vpc_id      = local.vpc_id
+
+  ingress {
+    description      = "TLS from VPC"
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  ingress {
+    description      = "TLS from VPC"
+    from_port        = 22
+    to_port          = 22
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  ingress {
+    description      = "TLS from VPC"
+    from_port        = 443
+    to_port          = 443
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = {
+    Name = "allow_tls"
   }
 }
 
