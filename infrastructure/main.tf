@@ -27,7 +27,7 @@ locals {
 }
 
 # Route 53 records
-resource "aws_route53_record" "gitlab" {
+resource "aws_route53_record" "www" {
   zone_id = "Z0604056W5WW02JGQ0TK"
   name    = "gitlab.zprado.com"
   type    = "A"
@@ -45,10 +45,18 @@ resource "aws_route53_record" "wiki" {
 
 resource "aws_route53_record" "rocket" {
   zone_id = "Z0604056W5WW02JGQ0TK"
-  name    = "rpcket.zprado.com"
+  name    = "rocket.zprado.com"
   type    = "A"
   ttl     = "300"
   records = [aws_instance.rocketchat_instance.public_ip]
+}
+
+resource "aws_route53_record" "jenkins" {
+  zone_id = "Z0604056W5WW02JGQ0TK"
+  name    = "jenkins.zprado.com"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.jenkins_instance.public_ip]
 }
 
 data "aws_ami" "ubuntu_ami" {
@@ -103,6 +111,20 @@ resource "aws_instance" "rocketchat_instance" {
 
   tags = {
     Name = "RocketChat Instance"
+  }
+}
+
+# Jenkins Instance
+resource "aws_instance" "jenkins_instance" {
+  ami           = data.aws_ami.ubuntu_ami.id
+  instance_type = "t3.small"
+  key_name = "horizons-ec2"
+
+  user_data = file("install_jenkins.sh")
+  security_groups = [aws_security_group.wikijs.name]
+
+  tags = {
+    Name = "Jenkins Instance"
   }
 }
 
