@@ -27,7 +27,7 @@ locals {
 }
 
 # Route 53 records
-resource "aws_route53_record" "www" {
+resource "aws_route53_record" "gitlab" {
   zone_id = "Z0604056W5WW02JGQ0TK"
   name    = "gitlab.zprado.com"
   type    = "A"
