@@ -9,4 +9,4 @@
 [x] - Install WikiJS <br />
 [x] - Copy of Provisioned EC2 instance for WikiJS <br />
 [x] - RocketChat <br />
-[ ] - Jenkins <br />
+[x] - Jenkins <br />
