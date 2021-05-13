@@ -5,8 +5,8 @@ services:
     image: rocketchat/rocket.chat:latest
     command: >
       bash -c
-        "for i in `seq 1 30`; do
-          node main.js &&
+        "for i in \`seq 1 30\`; do
+          node main.js && \
           s=$$? && break || s=$$?;
           echo \"Tried $$i times. Waiting 5 secs...\";
           sleep 5;
@@ -79,5 +79,3 @@ services:
   # this is used to expose the hubot port for notifications on the host on port 3001, e.g. for hubot-jenkins-notifier
     ports:
       - 3001:8080
-
-docker-compose up -d
